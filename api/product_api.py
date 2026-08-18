@@ -45,6 +45,6 @@ class ProductApi:
         )
 
         if response.status_code == 200:
-            return ResponseValidator.parse_response( response, ProductsResponse)
+            return ResponseValidator.parse_response(response, ProductsResponse)
 
         raise ApiError(response.json())

@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class ProductImage(BaseModel):
-    id: int
+    id: str
     by_name: str
     by_url: str
     source_name: str
@@ -12,30 +12,25 @@ class ProductImage(BaseModel):
 
 
 class Category(BaseModel):
-    id: int
-    parent_id: int
+    id: str
     name: str
     slug: str
 
 
 class Brand(BaseModel):
-    id: int
+    id: str
     name: str
-    slug: str
 
 
 class Product(BaseModel):
-    id: int
+    id: str
     name: str
     description: str
-    stock: int
     price: float
     is_location_offer: bool
     is_rental: bool
     co2_rating: str
-    brand_id: int
-    category_id: int
-    product_image_id: int
+    in_stock: bool
     is_eco_friendly: bool
     product_image: ProductImage
     category: Category

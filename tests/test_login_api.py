@@ -3,12 +3,13 @@ import pytest
 from api.api_client import ApiClient
 from api.auth_api import AuthApi
 from exceptions.api_error import ApiError
+from config.users import USER1
 
 def test_login(auth_api):
 
     response = auth_api.login(
-        "customer@practicesoftwaretesting.com",
-        "welcome01"
+        USER1["email"],
+        USER1["password"]
     )
 
     assert response.access_token
@@ -19,10 +20,10 @@ def test_login(auth_api):
 @pytest.mark.parametrize(
     "email,password",
     [
-        ("customer@practicesoftwaretesting.com", "wrong_password"),
-        ("wrong@test.com", "welcome01"),
-        ("customer@practicesoftwaretesting.com", ""),
-        ("", "welcome01"),
+        (USER1["email"], "wrong_password"),
+        ("wrong@test.com", USER1["password"]),
+        (USER1["email"], ""),
+        ("", USER1["password"]),
     ]
 )
 def test_login_invalid_credentials(auth_api, email, password):
