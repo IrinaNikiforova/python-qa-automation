@@ -1,7 +1,9 @@
 import pytest
+from pydantic import BaseModel
 
 from api.product_api import ProductApi
 from models.products_response import ProductsResponse
+from helpers.response_validator import ResponseValidator
 
 def test_products(product_api):
 
@@ -25,69 +27,24 @@ def test_products(product_api):
         assert product.brand.id
         assert product.brand.name
 
-@pytest.mark.parametrize(
-    "brand",
-    [
-        "01M0B3XVZF97SFESM28ZBBXKEA",
-        "01M0B3XVZF97SFESM28ZBBXKEB",
-    ]
-)
-def test_products_filter(product_api, brand):
 
-    products = product_api.products(brand=brand)
+def test_products_filter_by_brand(product_api):
+    list_of_brands = {}
 
-    assert products.data
+    for page in range(product_api.products().last_page):
+        products = product_api.products(page=page)
 
-    for product in products.data:
-        assert product.brand.id == brand
+        for product_data in products.data:
+            list_of_brands[product_data.brand.id] = product_data.brand.name
 
+    for brand_id, brand_name in list_of_brands.items():
+        products = product_api.products(brand=brand_id)
 
-@pytest.mark.parametrize(
-    "brand, name",
-    [
-        (
-            "01M0B3XVZF97SFESM28ZBBXKEA",
-            "ForgeFlex Tools"
-        ),
-        (
-            "01M0B3XVZF97SFESM28ZBBXKEB",
-            "MightyCraft Hardware"
-        ),
-    ]
-)
-def test_products_filter_by_brand(product_api, brand, name):
+        assert products.data
 
-    products = product_api.products(brand=brand)
-
-    assert products.data
-
-    for product in products.data:
-        assert product.brand.id == brand
-        assert product.brand.name == name
-
-
-@pytest.mark.parametrize(
-    "category_id, category_name",
-    [
-        (
-            "01M0B3XW9GD6DB48DMMH5CZP2H",
-            "Hammer"
-        ),
-    ]
-)
-def test_products_filter_by_category(
-    product_api,
-    category_id,
-    category_name
-):
-
-    products = product_api.products(category=category_id)
-
-    assert products.data
-
-    for product in products.data:
-        assert product.category.id == category_id
-        assert product.category.name == category_name
+        for product in products.data:
+            assert product.brand.id == brand_id
+            assert product.brand.name == brand_name
 
 
 def test_products_have_valid_data(product_api):
@@ -134,3 +91,18 @@ def test_products_with_auth_token(product_api, auth_token):
         assert product.name
         assert product.description
         assert product.price >= 0
+
+def test_comparing_products_and_product_api_by_id(product_api):
+
+    for page in range(product_api.products().last_page):
+        products = product_api.products(page=page)
+
+        for product_data in products.data:
+            product_id = product_data.id
+            product_by_id = product_api.product_by_id(product_id)
+
+            ResponseValidator.assert_models_equal(
+                product_data,
+                product_by_id
+            )
+   

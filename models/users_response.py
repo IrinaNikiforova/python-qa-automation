@@ -13,19 +13,19 @@ class Address(BaseModel):
 
 
 class User(BaseModel):
-  id: str
-  provider: Optional[str] = None
-  first_name: str
-  last_name: str
-  phone: Optional[str] = None
-  dob: date
-  email: str
-  totp_enabled: bool
-  created_at: datetime
-  address: Address
-  enabled: bool
-  role: str
-  failed_login_attempts: int
+    id: str
+    provider: Optional[str] = None
+    first_name: str
+    last_name: str
+    phone: Optional[str] = None
+    dob: Optional[date] = None
+    email: str
+    totp_enabled: bool
+    created_at: datetime
+    address: Address
+    enabled: bool
+    role: str
+    failed_login_attempts: int
 
 
 class UsersResponse(BaseModel):
