@@ -36,7 +36,7 @@ def product_api(api_client):
 def auth_token(auth_api):
     login_response = auth_api.login(
         USER1["email"],
-        USER2["password"]
+        USER1["password"]
     )
     return login_response.access_token
 
