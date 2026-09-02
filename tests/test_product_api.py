@@ -4,6 +4,48 @@ from pydantic import BaseModel
 from api.product_api import ProductApi
 from models.products_response import ProductsResponse
 from helpers.response_validator import ResponseValidator
+from helpers.product_payload_generator import ProductPayloadGenerator
+
+
+def test_create_product(product_api):
+
+   
+    payload = ProductPayloadGenerator.collect_products_data(product_api)
+    print("\n\nPayload: ", payload)
+
+    new_product_response = product_api.create_product(payload)
+
+    assert new_product_response.price == payload["price"], \
+        f"price mismatch: response={new_product_response.price}, payload={payload['price']}"
+
+    assert new_product_response.brand.id == payload["brand_id"], \
+    f"brand_id mismatch: response={new_product_response.brand.id}, payload={payload['brand_id']}"
+
+    assert new_product_response.category.id == payload["category_id"], \
+        f"category_id mismatch: response={new_product_response.category.id}, payload={payload['category_id']}"
+
+    assert new_product_response.co2_rating == payload["co2_rating"], \
+        f"co2_rating mismatch: response={new_product_response.co2_rating}, payload={payload['co2_rating']}"
+
+    assert new_product_response.is_location_offer == payload["is_location_offer"], \
+        f"is_location_offer mismatch: response={new_product_response.is_location_offer}, payload={payload['is_location_offer']}"
+
+    assert new_product_response.is_rental == payload["is_rental"], \
+        f"is_rental mismatch: response={new_product_response.is_rental}, payload={payload['is_rental']}"
+
+    assert new_product_response.name == payload["name"], \
+        f"name mismatch: response={new_product_response.name}, payload={payload['name']}"
+
+    assert new_product_response.product_image.id == payload["product_image_id"], \
+        f"product_image_id mismatch: response={new_product_response.product_image.id}, payload={payload['product_image_id']}"
+
+    assert new_product_response.in_stock == payload["stock"], \
+        f"stock mismatch: response={new_product_response.in_stock}, payload={payload['stock']}"
+
+    assert new_product_response.is_eco_friendly == payload["is_eco_friendly"], \
+        f"is_eco_friendly mismatch: response={new_product_response.is_eco_friendly}, payload={payload['is_eco_friendly']}"
+
+  
 
 def test_products(product_api):
 

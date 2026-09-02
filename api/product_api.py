@@ -3,6 +3,7 @@ from models.products_response import ProductsResponse
 from exceptions.api_error import ApiError
 from helpers.response_validator import ResponseValidator
 from models.product_by_id_response import ProductByIdResponse
+from models.product_create_response import ProductCreateResponse
 
 
 class ProductApi:
@@ -57,4 +58,13 @@ class ProductApi:
         if response.status_code == 200:
             return ResponseValidator.parse_response(response, ProductByIdResponse)
 
+        raise ApiError(response.json())
+
+    def create_product(self, payload):
+
+        response = self.client.post("/products", json=payload)
+
+        if response.status_code == 201:
+            return ResponseValidator.parse_response(response, ProductCreateResponse)
+        
         raise ApiError(response.json())
