@@ -34,7 +34,7 @@ class Spec(BaseModel):
 class ProductByIdResponse(BaseModel):
     id: str
     name: str
-    description: str
+    description: str | None
     price: float
     is_location_offer: bool
     is_rental: bool

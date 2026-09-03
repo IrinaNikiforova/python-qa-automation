@@ -6,6 +6,7 @@ from api.auth_api import AuthApi
 from api.product_api import ProductApi
 from config.users import USER1, USER2, USER3, ADMIN
 from api.user_api import UserApi
+from helpers.product_payload_generator import ProductPayloadGenerator
 
 
 @pytest.fixture
@@ -51,3 +52,12 @@ def auth_admin_token(auth_api):
 @pytest.fixture
 def user_api(api_client):
     return UserApi(api_client)
+
+@pytest.fixture
+def created_product(product_api, auth_admin_token):
+
+    payload = ProductPayloadGenerator.collect_products_data(product_api)
+    product_api.client.set_token(auth_admin_token)
+    response = product_api.create_product(payload)
+    yield payload, response
+    product_api.delete_product(response.id)

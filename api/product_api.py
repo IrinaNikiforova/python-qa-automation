@@ -68,3 +68,12 @@ class ProductApi:
             return ResponseValidator.parse_response(response, ProductCreateResponse)
         
         raise ApiError(response.json())
+
+    def delete_product(self, product_id):
+
+        response = self.client.delete(f"/products/{product_id}")
+
+        if response.status_code == 204:
+            return response
+            
+        raise ApiError(response.json())
