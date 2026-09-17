@@ -18,15 +18,18 @@ def test_login(auth_api):
 
 
 @pytest.mark.parametrize(
-    "email,password",
+    "email,password,status_code,error_msg",
     [
-        (USER1["email"], "wrong_password"),
-        ("wrong@test.com", USER1["password"]),
-        (USER1["email"], ""),
-        ("", USER1["password"]),
+        (USER1["email"], "wrong_password", 401, 'Unauthorized'),
+        ("wrong@test.com", USER1["password"], 401, 'Unauthorized'),
+        (USER1["email"], "", 401, 'Invalid login request'),
+        ("", USER1["password"], 401, 'Invalid login request'),
     ]
 )
-def test_login_invalid_credentials(auth_api, email, password):
+def test_login_invalid_credentials(auth_api, email, password, status_code, error_msg):
 
-    with pytest.raises(ApiError):
+    with pytest.raises(ApiError) as exc_info:
         auth_api.login(email, password)
+    
+    assert exc_info.value.status_code == status_code, f"status code if frong for : {email} and {password}. Expected: {status_code}. Actual: {exc_info.value.status_code}"
+    assert exc_info.value.response_body["error"] == error_msg, f"Expected error msg {error_msg} and actual error msg is {exc_info.value.response_body["error"]}"
