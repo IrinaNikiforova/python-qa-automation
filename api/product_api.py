@@ -49,7 +49,20 @@ class ProductApi:
         if response.status_code == 200:
             return ResponseValidator.parse_response(response, ProductsResponse)
 
-        raise ApiError(response.json())
+        raise ApiError(response.status_code, response.json())
+
+    def search_product(self, q):
+        params = {}
+
+        if q is not None:
+            params["q"] = q
+
+        response = self.client.get("/products/search", params=params)
+
+        if response.status_code == 200:
+            return ResponseValidator.parse_response(response, ProductsResponse)
+
+        raise ApiError(response.status_code, response.json())
     
     def product_by_id(self, product_id):
 
@@ -58,7 +71,7 @@ class ProductApi:
         if response.status_code == 200:
             return ResponseValidator.parse_response(response, ProductByIdResponse)
 
-        raise ApiError(response.json())
+        raise ApiError(response.status_code, response.json())
 
     def create_product(self, payload):
 
@@ -67,7 +80,7 @@ class ProductApi:
         if response.status_code == 201:
             return ResponseValidator.parse_response(response, ProductCreateResponse)
         
-        raise ApiError(response.json())
+        raise ApiError(response.status_code, response.json())
 
     def delete_product(self, product_id):
 
@@ -75,5 +88,5 @@ class ProductApi:
 
         if response.status_code == 204:
             return response
-            
-        raise ApiError(response.json())
+
+        raise ApiError(response.status_code, response.json())

@@ -14,7 +14,7 @@ class ProductImage(BaseModel):
 class Category(BaseModel):
     id: str
     name: str
-    slug: str
+    slug: str | None = None 
 
 
 class Brand(BaseModel):

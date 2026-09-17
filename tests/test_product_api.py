@@ -146,7 +146,7 @@ def test_created_product_is_available_in_products(
 
         pytest.fail(
             f"BUG: Created product with id={product_id} "
-            f"was not found in GET /products after 10 attempts."
+            f"was not found in GET /products after 2 attempts."
         )
 
 
@@ -292,3 +292,28 @@ def test_comparing_products_and_product_api_by_id(product_api):
                 product_data,
                 product_by_id
             )
+
+@pytest.mark.parametrize(
+    "search, expected_result",
+    [
+        ("Hammer", True),
+        ("hammer", True),
+        ("dRill", True),
+        ("ThOr", True),
+        ("sdfvsdfv", False)
+    ]
+)
+def test_search_products(search, expected_result, product_api):
+
+    response = product_api.search_product(search)
+    product_names = {product.name for product in response.data }
+
+    if expected_result == False:
+        assert not product_names, f"Search for '{search}' returned list of products{response.data}"
+    else:
+        assert product_names, f"Search for '{search}' returned no products"
+        assert all(
+            search.lower() in product_name.lower()
+            for product_name in product_names
+                ), f"Response {product_names} doesn't contain search name: {search}"    
+
