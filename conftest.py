@@ -7,6 +7,7 @@ from api.product_api import ProductApi
 from config.users import USER1, USER2, USER3, ADMIN
 from api.user_api import UserApi
 from helpers.product_payload_generator import ProductPayloadGenerator
+from exceptions.api_error import ApiError
 
 
 @pytest.fixture

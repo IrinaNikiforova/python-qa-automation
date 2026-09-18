@@ -5,7 +5,6 @@ from helpers.response_validator import ResponseValidator
 from helpers.product_payload_generator import ProductPayloadGenerator
 
 
-
 def test_create_product(created_product):
 
     payload, response = created_product
@@ -45,7 +44,7 @@ def test_create_product(created_product):
         ("is_eco_friendly", False),
     ]
 )
-def test_create_product_with_different_bollian_varation(product_api, auth_admin_token, field, value):
+def test_create_product_with_different_boolean_variations(product_api, auth_admin_token, field, value):
     payload = ProductPayloadGenerator.collect_products_data(product_api, field, value)
     product_api.client.set_token(auth_admin_token)
     response = product_api.create_product(payload)
