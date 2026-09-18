@@ -7,7 +7,7 @@ from helpers.product_payload_generator import ProductPayloadGenerator
 
 def test_create_product(created_product):
 
-    payload, response = created_product
+    _, response = created_product
 
     assert response.price == payload["price"], \
         f"price mismatch: response={response.price}, payload={payload['price']}"
@@ -48,8 +48,8 @@ def test_create_product_with_different_boolean_variations(product_api, auth_admi
     payload = ProductPayloadGenerator.collect_products_data(product_api, field, value)
     product_api.client.set_token(auth_admin_token)
     response = product_api.create_product(payload)
-    assert getattr(response,field) == value, \
-        f"{field} mismatch: response={getattr(response,field)}, payload={value}"
+    assert getattr(response, field) == value, \
+        f"{field} mismatch: response={getattr(response, field)}, payload={value}"
 
 
 def test_created_product_is_available_by_id(
@@ -57,7 +57,7 @@ def test_created_product_is_available_by_id(
     created_product
 ):
 
-    payload, response = created_product
+    _, response = created_product
 
     product_id = response.id
 
@@ -97,21 +97,11 @@ def test_created_product_is_available_in_products(
 
     for attempt in range(2):
 
-        print(f"\n===== ATTEMPT {attempt + 1} =====")
-
         first_page = product_api.products()
-
-        print(f"Total products: {first_page.total}")
-        print(f"Total pages: {first_page.last_page}")
 
         for page in range(1, first_page.last_page + 1):
 
             products_response = product_api.products(page=page)
-
-            print(
-                f"Checking page {page}: "
-                f"{len(products_response.data)} products"
-            )
 
             if existing_product is None and products_response.data:
                 existing_product = products_response.data[0]
@@ -128,16 +118,9 @@ def test_created_product_is_available_in_products(
         if found_product is not None:
             break
 
-        print("Created product was not found. Waiting 1 second...")
         time.sleep(1)
 
-    print("\n===== CREATED PRODUCT =====")
-    print(response.model_dump_json(indent=2))
-
     if found_product is not None:
-
-        print("\n===== PRODUCT FOUND IN GET /products =====")
-        print(found_product.model_dump_json(indent=2))
 
         ResponseValidator.assert_models_equal(
             response,
@@ -145,8 +128,6 @@ def test_created_product_is_available_in_products(
         )
 
     else:
-
-        print("\n===== PRODUCT FOUND IN GET /products =====")
 
         if existing_product is not None:
             print(existing_product.model_dump_json(indent=2))
@@ -317,7 +298,7 @@ def test_search_products(search, expected_result, product_api):
     response = product_api.search_product(search)
     product_names = {product.name for product in response.data }
 
-    if expected_result == False:
+    if not expected_result:
         assert not product_names, f"Search for '{search}' returned list of products{response.data}"
     else:
         assert product_names, f"Search for '{search}' returned no products"
