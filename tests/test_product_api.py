@@ -2,6 +2,8 @@ import pytest
 import time
 
 from helpers.response_validator import ResponseValidator
+from helpers.product_payload_generator import ProductPayloadGenerator
+
 
 
 def test_create_product(created_product):
@@ -23,24 +25,32 @@ def test_create_product(created_product):
     assert response.is_location_offer == payload["is_location_offer"], \
         f"is_location_offer mismatch: response={response.is_location_offer}, payload={payload['is_location_offer']}"
 
-    assert response.is_rental == payload["is_rental"], \
-        f"is_rental mismatch: response={response.is_rental}, payload={payload['is_rental']}"
-
     assert response.name == payload["name"], \
         f"name mismatch: response={response.name}, payload={payload['name']}"
 
     assert response.product_image.id == payload["product_image_id"], \
         f"product_image_id mismatch: response={response.product_image.id}, payload={payload['product_image_id']}"
 
-    assert response.in_stock == payload["stock"], \
-        f"stock mismatch: response={response.in_stock}, payload={payload['stock']}"
 
-    assert response.is_eco_friendly == payload["is_eco_friendly"], \
-        (
-            f"is_eco_friendly mismatch: "
-            f"response={response.is_eco_friendly}, "
-            f"payload={payload['is_eco_friendly']}"
-        )
+@pytest.mark.parametrize(
+    "field, value",
+    [
+        ("is_location_offer", True),
+        ("is_location_offer", False),
+        ("is_rental", True),
+        ("is_rental", False),
+        ("in_stock", True),
+        ("in_stock", False),
+        ("is_eco_friendly", True),
+        ("is_eco_friendly", False),
+    ]
+)
+def test_create_product_with_different_bollian_varation(product_api, auth_admin_token, field, value):
+    payload = ProductPayloadGenerator.collect_products_data(product_api, field, value)
+    product_api.client.set_token(auth_admin_token)
+    response = product_api.create_product(payload)
+    assert getattr(response,field) == value, \
+        f"{field} mismatch: response={getattr(response,field)}, payload={value}"
 
 
 def test_created_product_is_available_by_id(
