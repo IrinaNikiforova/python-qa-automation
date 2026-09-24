@@ -1,4 +1,5 @@
 from faker import Faker
+from typing import get_args
 from api.product_api import ProductApi
 import random
 

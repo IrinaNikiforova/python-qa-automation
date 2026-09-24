@@ -1,8 +1,8 @@
 # Python API Test Automation Framework
 
-A Python-based API test automation framework built with **pytest**, **Requests**, **Pydantic**, and **Faker**.
+A Python-based API test automation framework built with **Python**, **pytest**, **Requests**, **Pydantic**, and **Faker**.
 
-The project demonstrates practical QA automation skills including API testing, request/response validation, test data generation, authentication, parameterized testing, custom error handling, logging, test reporting, and defect detection.
+The project demonstrates practical QA automation skills including API testing, request/response validation, test data generation, authentication, parameterized testing, custom error handling, logging, test reporting, fixture-based test data management, and defect detection.
 
 ---
 
@@ -24,7 +24,7 @@ The project demonstrates practical QA automation skills including API testing, r
 
 ```text
 python-qa-automation/
-│
+
 ├── api/
 │   ├── api_client.py
 │   ├── auth_api.py
@@ -38,7 +38,9 @@ python-qa-automation/
 │   └── api_error.py
 │
 ├── helpers/
+│   ├── list_helpers.py
 │   ├── product_payload_generator.py
+│   ├── product_payload_generator_2.py
 │   └── response_validator.py
 │
 ├── models/
@@ -58,6 +60,11 @@ python-qa-automation/
 ├── utils/
 │   └── logger.py
 │
+├── lessons/
+│   ├── lesson_10.py
+│   ├── lesson_11.py
+│   └── lesson_12.py
+│
 ├── conftest.py
 ├── requirements.txt
 └── README.md
@@ -67,7 +74,7 @@ python-qa-automation/
 
 ## Framework Architecture
 
-The framework separates API communication, endpoint logic, data models, test data generation, validation, fixtures, and tests.
+The framework separates HTTP communication, endpoint logic, data models, test data generation, reusable helpers, fixtures, and tests.
 
 ```text
 Tests
@@ -88,12 +95,14 @@ Response
 Pydantic Models
   │
   ▼
-Assertions / Validation
+Validation / Assertions
 ```
 
-### Main components
+Supporting components such as fixtures, helpers, logging, and custom exceptions are used across the framework.
 
-**ApiClient**
+### Main Components
+
+### ApiClient
 
 Responsible for low-level HTTP communication.
 
@@ -105,13 +114,13 @@ It provides common methods for:
 * PATCH
 * DELETE
 
-The client also handles authentication tokens.
+The client also manages authentication tokens.
 
 Endpoint-specific logic is kept outside the HTTP client.
 
 ---
 
-**API Layer**
+### API Layer
 
 Endpoint classes provide business-level API methods.
 
@@ -127,8 +136,11 @@ For example, tests interact with methods such as:
 
 ```python
 product_api.products()
+
 product_api.product_by_id(product_id)
+
 product_api.create_product(payload)
+
 product_api.delete_product(product_id)
 ```
 
@@ -138,9 +150,9 @@ This keeps tests readable and avoids placing raw HTTP requests directly inside t
 
 ## Pydantic Models
 
-Pydantic models are used to validate and structure API responses.
+Pydantic models are used to validate and structure API data.
 
-Examples include:
+Response models include:
 
 ```text
 Product
@@ -176,7 +188,7 @@ The project includes:
 CreateProductRequest
 ```
 
-This helps separate request data from response models.
+This separates request data from response models.
 
 The framework therefore distinguishes between:
 
@@ -239,9 +251,11 @@ This verifies the relationship between request data and response data instead of
 
 ## Dynamic Test Data Generation
 
-The project uses **Faker** and API data to generate product payloads.
+The framework includes reusable helpers for generating test data.
 
-The `ProductPayloadGenerator` is responsible for creating valid product data for tests.
+### ProductPayloadGenerator
+
+`ProductPayloadGenerator` generates product data using Faker, random values, and valid reference data obtained from the API.
 
 Generated data can include:
 
@@ -254,9 +268,61 @@ Generated data can include:
 * category
 * product image
 
-Valid IDs are obtained from the API instead of using arbitrary values.
+Valid IDs are obtained from API data instead of relying only on hard-coded values.
 
-This makes the tests less dependent on hard-coded test data.
+---
+
+### Model-Driven Payload Generation
+
+The project also contains an experimental `ProductPayloadGenerator2`.
+
+This generator uses a Pydantic model as the source of information about the fields that need to be generated.
+
+For example:
+
+```python
+ProductPayloadGenerator2.collect_products_data_2(
+    CreateProductRequest
+)
+```
+
+The generator inspects:
+
+```python
+model.model_fields
+```
+
+and determines how to generate data based on the field type.
+
+It currently supports:
+
+* `str`
+* `float`
+* `bool`
+* optional types such as `str | None`
+* nested Pydantic models
+
+Nested models are handled recursively.
+
+Conceptually:
+
+```text
+Pydantic Model
+      ↓
+Inspect fields
+      ↓
+Determine field type
+      ↓
+Generate value
+      ↓
+Nested Model?
+      ↓
+Generate nested data recursively
+```
+
+The generator is intentionally being developed incrementally as additional API endpoints become available.
+
+Reference fields such as `brand_id`, `category_id`, and `product_image_id` will be progressively connected to their corresponding API sources as the framework expands.
 
 ---
 
@@ -296,9 +362,11 @@ For example:
 
 ```text
 Request
+
 is_rental = True
 
 Expected response
+
 is_rental = True
 ```
 
@@ -311,7 +379,7 @@ The tests therefore help identify both:
 * response value mismatches
 * unexpected server errors
 
-This demonstrates how automated tests can be used not only for regression testing but also for defect detection.
+This demonstrates how automated tests can be used for both regression testing and defect detection.
 
 ---
 
@@ -354,11 +422,16 @@ This keeps the known defect visible in the test suite without treating the expec
 
 ---
 
-## Response Comparison
+## Response Validation
 
 The framework includes a reusable `ResponseValidator`.
 
-It is used to compare structured Pydantic models.
+It provides functionality for:
+
+* parsing API responses into Pydantic models
+* comparing Pydantic models
+* comparing lists of models
+* reporting detailed field-level differences
 
 For example:
 
@@ -371,19 +444,17 @@ ResponseValidator.assert_models_equal(
 
 This is used to verify that the same product contains consistent data when retrieved through different API endpoints.
 
-The test compares:
+The comparison helps identify inconsistencies between:
 
 ```text
 GET /products
 ```
 
-with:
+and:
 
 ```text
 GET /products/{id}
 ```
-
-This helps detect inconsistencies between collection and individual resource endpoints.
 
 ---
 
@@ -396,9 +467,7 @@ Examples include:
 ```python
 assert isinstance(product.id, str)
 assert product.id
-
 assert product.name
-
 assert product.price >= 0
 ```
 
@@ -442,7 +511,7 @@ for product in products.data:
     assert product.brand.name == brand_name
 ```
 
-This validates both the filtering logic and the consistency of brand information.
+This validates both filtering behavior and the consistency of brand information.
 
 ---
 
@@ -490,7 +559,13 @@ Separate authentication fixtures are used for different user roles when required
 
 ## Fixtures and Test Data Management
 
-Pytest fixtures are used to manage API clients, authentication, test data, and cleanup.
+Pytest fixtures are used to manage:
+
+* API clients
+* authentication
+* test data
+* test setup
+* cleanup
 
 A `created_product` fixture:
 
@@ -572,7 +647,7 @@ A negative search scenario is also included:
 sdfvsdfv
 ```
 
-The test verifies that search behavior is case-insensitive and that returned product names contain the requested search term.
+The test verifies case-insensitive search behavior and validates returned product names against the requested search term.
 
 ---
 
@@ -591,6 +666,7 @@ The framework logs important API operations such as:
 ```text
 GET /products
 GET /products -> 200
+
 POST /products
 POST /products -> 201
 ```
@@ -659,74 +735,5 @@ pytest -v
 Run a specific test file:
 
 ```bash
-pytest tests/test_product_api.py
+pytest tests/test
 ```
-
-Generate an Allure report:
-
-```bash
-pytest --alluredir=allure-results
-allure generate allure-results -o allure-report --clean
-allure open allure-report
-```
-
----
-
-## Test Configuration
-
-User credentials are kept outside the repository.
-
-The project uses:
-
-```text
-config/users.examples.py
-```
-
-as an example configuration file.
-
-Real credentials are stored in the local configuration and excluded from Git.
-
-Sensitive information such as passwords and authentication tokens should not be committed to the repository or included in logs.
-
----
-
-## QA Automation Practices Demonstrated
-
-This project demonstrates practical automation practices including:
-
-* API testing with Python and Requests
-* pytest fixtures
-* parameterized testing
-* REST API validation
-* request/response comparison
-* Pydantic model validation
-* dynamic test data generation
-* authentication handling
-* test cleanup
-* retry handling for transient failures
-* custom exceptions
-* logging
-* Allure reporting
-* known defect documentation with `xfail`
-* separation of API client and endpoint logic
-* reusable validation helpers
-
----
-
-## Project Goal
-
-The goal of this project is to build a maintainable Python API automation framework while developing practical automation skills.
-
-The project focuses on writing tests that validate not only HTTP status codes, but also:
-
-* response structure
-* data types
-* field values
-* relationships between API resources
-* filtering
-* pagination
-* authentication
-* search behavior
-* known API defects
-
-The framework is continuously improved as new automation concepts and QA practices are introduced.
