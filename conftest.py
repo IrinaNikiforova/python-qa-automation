@@ -11,14 +11,8 @@ from exceptions.api_error import ApiError
 
 
 @pytest.fixture
-def checkout_page():
-    print("SETUP: Creating CheckoutPage")
-
-    page = CheckoutPage()
-
-    yield page
-
-    print("TEARDOWN: Closing CheckoutPage")
+def checkout_page(page):
+    return CheckoutPage(page)
 
 @pytest.fixture
 def api_client():
@@ -74,4 +68,3 @@ def created_product(product_api, auth_admin_token):
         yield payload, response
     finally:
         product_api.delete_product(response.id)
-
