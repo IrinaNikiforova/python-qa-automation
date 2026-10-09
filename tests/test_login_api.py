@@ -5,6 +5,8 @@ from api.auth_api import AuthApi
 from exceptions.api_error import ApiError
 from config.users import USER1
 
+@pytest.mark.api
+@pytest.mark.regression
 def test_login(auth_api):
 
     response = auth_api.login(
@@ -16,7 +18,8 @@ def test_login(auth_api):
     assert response.token_type == "bearer"
     assert response.expires_in > 0
 
-
+@pytest.mark.api
+@pytest.mark.regression
 @pytest.mark.parametrize(
     "email,password,status_code,error_msg",
     [

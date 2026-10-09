@@ -4,6 +4,8 @@ import time
 from helpers.response_validator import ResponseValidator
 from helpers.product_payload_generator import ProductPayloadGenerator
 
+@pytest.mark.api
+@pytest.mark.regression
 def test_create_product_with_user_token(product_api, auth_token):
 
     payload = ProductPayloadGenerator.collect_products_data(product_api)
