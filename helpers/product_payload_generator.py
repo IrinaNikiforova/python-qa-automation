@@ -1,4 +1,5 @@
 from faker import Faker
+from typing import get_args
 from api.product_api import ProductApi
 import random
 
@@ -8,7 +9,12 @@ class ProductPayloadGenerator:
     fake = Faker()
 
     @staticmethod
-    def collect_products_data(product_api):
+    def collect_products_data(
+            product_api, 
+            is_location_offer=None,
+            is_rental=None,
+            in_stock=None,
+            is_eco_friendly=None):
         list_brand_id = []
         list_category_id = []
         list_co2_rating = []

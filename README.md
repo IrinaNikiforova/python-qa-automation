@@ -1,281 +1,739 @@
-Python QA Automation Framework
+# Python API Test Automation Framework
 
-A Python-based API automation framework built with pytest, Requests, and Pydantic.
+A Python-based API test automation framework built with **Python**, **pytest**, **Requests**, **Pydantic**, and **Faker**.
 
-The project is designed to demonstrate practical QA automation skills: API testing, request/response validation, reusable fixtures, authentication, test data generation, custom error handling, retry logic, cleanup, and investigation of unexpected API behavior.
+The project demonstrates practical QA automation skills including API testing, request/response validation, test data generation, authentication, parameterized testing, custom error handling, logging, test reporting, fixture-based test data management, and defect detection.
 
-Tech Stack
+---
 
-Python 3.12+
+## Tech Stack
 
-pytest
+* **Python 3.12+**
+* **pytest**
+* **Requests**
+* **Pydantic v2**
+* **Faker**
+* **Allure Report**
+* **Python logging**
+* **REST API**
+* **Git / GitHub**
 
-Requests
+---
 
-Pydantic v2
+## Project Structure
 
-Faker
-
-REST API
-
-Framework Structure
-
+```text
 python-qa-automation/
+
 ├── api/
 │   ├── api_client.py
 │   ├── auth_api.py
 │   ├── product_api.py
 │   └── user_api.py
+│
 ├── config/
 │   └── users.examples.py
+│
 ├── exceptions/
 │   └── api_error.py
+│
 ├── helpers/
+│   ├── list_helpers.py
 │   ├── product_payload_generator.py
+│   ├── product_payload_generator_2.py
 │   └── response_validator.py
+│
 ├── models/
-│   ├── products_response.py
+│   ├── create_product_request.py
+│   ├── login_response.py
 │   ├── product_by_id_response.py
 │   ├── product_create_response.py
-│   └── ...
+│   ├── product.py
+│   ├── products_response.py
+│   ├── user_adress.py
+│   ├── users_me_response.py
+│   └── users_response.py
+│
 ├── tests/
 │   └── test_product_api.py
+│
+├── utils/
+│   └── logger.py
+│
+├── lessons/
+│   ├── lesson_10.py
+│   ├── lesson_11.py
+│   └── lesson_12.py
+│
 ├── conftest.py
 ├── requirements.txt
 └── README.md
+```
 
-Architecture
+---
 
-The framework separates responsibilities between HTTP communication, API endpoint logic, validation, test data, and pytest fixtures.
+## Framework Architecture
 
+The framework separates HTTP communication, endpoint logic, data models, test data generation, reusable helpers, fixtures, and tests.
+
+```text
+Tests
+  │
+  ▼
+API Layer
+  │
+  ▼
 ApiClient
-
-ApiClient is the low-level HTTP layer. It provides reusable methods for:
-
-GET
-
-POST
-
-PUT
-
-PATCH
-
-DELETE
-
-authorization headers and token management
-
-The client returns the original requests.Response and does not contain endpoint-specific business logic or retry decisions.
-
-API Classes
-
-Endpoint classes such as ProductApi, AuthApi, and UserApi provide higher-level API operations.
-
-For example, ProductApi currently covers:
-
-product listing and filters
-
-product search
-
-product retrieval by ID
-
-product creation
-
-product deletion
-
-Successful responses are validated with Pydantic models. Unexpected HTTP responses are converted into the framework's custom ApiError exception.
-
+  │
+  ▼
+REST API
+  │
+  ▼
+Response
+  │
+  ▼
 Pydantic Models
+  │
+  ▼
+Validation / Assertions
+```
 
-Pydantic is used to validate API responses and convert JSON responses into typed Python objects.
+Supporting components such as fixtures, helpers, logging, and custom exceptions are used across the framework.
 
-This provides structured access to nested response data, for example:
+### Main Components
 
+### ApiClient
+
+Responsible for low-level HTTP communication.
+
+It provides common methods for:
+
+* GET
+* POST
+* PUT
+* PATCH
+* DELETE
+
+The client also manages authentication tokens.
+
+Endpoint-specific logic is kept outside the HTTP client.
+
+---
+
+### API Layer
+
+Endpoint classes provide business-level API methods.
+
+Examples:
+
+```text
+ProductApi
+AuthApi
+UserApi
+```
+
+For example, tests interact with methods such as:
+
+```python
+product_api.products()
+
+product_api.product_by_id(product_id)
+
+product_api.create_product(payload)
+
+product_api.delete_product(product_id)
+```
+
+This keeps tests readable and avoids placing raw HTTP requests directly inside test cases.
+
+---
+
+## Pydantic Models
+
+Pydantic models are used to validate and structure API data.
+
+Response models include:
+
+```text
+Product
+ProductsResponse
+ProductCreateResponse
+ProductByIdResponse
+LoginResponse
+UsersResponse
+UsersMeResponse
+```
+
+Nested API objects are represented as typed models.
+
+For example:
+
+```python
 response.brand.id
 response.category.id
 response.product_image.id
+```
 
-The framework also contains recursive model comparison helpers for validating complex nested API responses.
+This provides structured access to API response data and allows validation of response schemas and data types.
 
-Authentication
+---
 
-Authentication is implemented through reusable pytest fixtures.
+## Request Models
 
-Session-scoped authentication fixtures obtain tokens once and provide them to tests that require authorization. Function-scoped API clients are kept isolated because the client stores a mutable authentication token.
+Request data can also be represented using Pydantic models.
 
-Pytest Fixtures
+The project includes:
 
-The framework uses fixtures for dependency injection and resource management.
+```text
+CreateProductRequest
+```
+
+This separates request data from response models.
+
+The framework therefore distinguishes between:
+
+```text
+Request Model
+      ↓
+API Request
+      ↓
+API Response
+      ↓
+Response Model
+```
+
+---
+
+## API Test Coverage
+
+The current test suite covers the following areas:
+
+| Area                    | Coverage                                       |
+| ----------------------- | ---------------------------------------------- |
+| Product creation        | Request/response field validation              |
+| Product retrieval       | GET product by ID                              |
+| Product consistency     | Collection vs. individual product comparison   |
+| Product data validation | Required fields, types and values              |
+| Brand filtering         | Filter result validation                       |
+| Pagination              | Page numbers, totals and response sizes        |
+| Authentication          | Authenticated product requests                 |
+| Search                  | Case-insensitive and negative search scenarios |
+| Boolean fields          | True/False parameterized scenarios             |
+| Defect detection        | Known API behavior documented with `xfail`     |
+| Test data               | Dynamic product data generation                |
+| Cleanup                 | Automatic deletion of created products         |
+
+---
+
+## Product Creation Testing
+
+The framework tests product creation through the API using dynamically generated test data.
+
+The test validates that important fields returned by the API match the original request payload.
 
 Examples include:
 
-API client creation
+```python
+assert response.price == payload["price"]
 
-authenticated API clients
+assert response.brand.id == payload["brand_id"]
 
-user and admin authentication tokens
+assert response.category.id == payload["category_id"]
 
-product API objects
+assert response.co2_rating == payload["co2_rating"]
 
-created test products
+assert response.name == payload["name"]
+```
 
-The created_product fixture demonstrates setup, test execution, and teardown with yield and try/finally.
+This verifies the relationship between request data and response data instead of only checking the HTTP status code.
+
+---
+
+## Dynamic Test Data Generation
+
+The framework includes reusable helpers for generating test data.
+
+### ProductPayloadGenerator
+
+`ProductPayloadGenerator` generates product data using Faker, random values, and valid reference data obtained from the API.
+
+Generated data can include:
+
+* product name
+* description
+* price
+* stock
+* Boolean fields
+* brand
+* category
+* product image
+
+Valid IDs are obtained from API data instead of relying only on hard-coded values.
+
+---
+
+### Model-Driven Payload Generation
+
+The project also contains an experimental `ProductPayloadGenerator2`.
+
+This generator uses a Pydantic model as the source of information about the fields that need to be generated.
+
+For example:
+
+```python
+ProductPayloadGenerator2.collect_products_data_2(
+    CreateProductRequest
+)
+```
+
+The generator inspects:
+
+```python
+model.model_fields
+```
+
+and determines how to generate data based on the field type.
+
+It currently supports:
+
+* `str`
+* `float`
+* `bool`
+* optional types such as `str | None`
+* nested Pydantic models
+
+Nested models are handled recursively.
 
 Conceptually:
 
-setup
-  ↓
-create product
-  ↓
-yield product to test
-  ↓
-test runs
-  ↓
-finally → delete product
+```text
+Pydantic Model
+      ↓
+Inspect fields
+      ↓
+Determine field type
+      ↓
+Generate value
+      ↓
+Nested Model?
+      ↓
+Generate nested data recursively
+```
 
-Cleanup is attempted even when the test itself fails after the yield statement.
+The generator is intentionally being developed incrementally as additional API endpoints become available.
 
-Error Handling
+Reference fields such as `brand_id`, `category_id`, and `product_image_id` will be progressively connected to their corresponding API sources as the framework expands.
 
-The framework uses a custom ApiError exception that keeps the HTTP status code and response body available to the calling test or fixture.
+---
 
-Example error flow:
+## Parameterized Testing
 
-HTTP response
-    ↓
-ProductApi
-    ↓
-ApiError(status_code, response_body)
-    ↓
-pytest fixture
-    ↓
-retry or raise
+Pytest parameterization is used to execute the same test with different input values.
 
-This keeps API-specific error interpretation inside the API layer while allowing fixtures to make retry decisions.
+For example, Boolean fields are tested with both `True` and `False` values:
 
-Retry Logic
+```python
+@pytest.mark.parametrize(
+    "field, value",
+    [
+        ("is_location_offer", True),
+        ("is_location_offer", False),
+        ("is_rental", True),
+        ("is_rental", False),
+        ("in_stock", True),
+        ("in_stock", False),
+        ("is_eco_friendly", True),
+        ("is_eco_friendly", False),
+    ]
+)
+```
 
-Transient API failures can be retried by the created_product fixture.
+This allows multiple scenarios to be covered without duplicating test code.
 
-Permanent client-side or authorization errors such as 400, 401, 403, and 404 are not retried. The request is retried only while retry attempts remain.
+---
 
-The retry behavior has been manually verified by temporarily using an invalid base URL and confirming that the fixture performs the expected number of attempts before raising the error.
+## Boolean Field Validation and Defect Detection
 
-Test Data Generation
+The product creation tests revealed inconsistent API behavior for some Boolean fields.
 
-ProductPayloadGenerator creates product payloads using dynamic test data and valid IDs retrieved from the API.
+The framework checks whether the value sent in the request is correctly reflected in the API response.
 
-This helps reduce hard-coded test data and supports broader data coverage across test runs.
+For example:
 
-At the same time, the project distinguishes between randomized data and deterministic defect-reproduction data when a specific behavior needs to be reproduced consistently.
+```text
+Request
 
-API Validation Example
+is_rental = True
 
-The product creation test validates that important request values are reflected correctly in the API response.
+Expected response
+
+is_rental = True
+```
+
+If the API returns a different value, the test reports the mismatch.
+
+Some Boolean scenarios also result in HTTP 500 responses from the API.
+
+The tests therefore help identify both:
+
+* response value mismatches
+* unexpected server errors
+
+This demonstrates how automated tests can be used for both regression testing and defect detection.
+
+---
+
+## Known API Defect
+
+The project contains a test marked with `pytest.mark.xfail` for a known API behavior.
+
+The scenario is:
+
+```text
+POST /products
+       ↓
+Product created successfully
+       ↓
+GET /products/{id}
+       ↓
+Product is available
+```
+
+However, the same product does not reliably appear in the paginated:
+
+```text
+GET /products
+```
+
+The test documents this known behavior:
+
+```python
+@pytest.mark.xfail(
+    reason=(
+        "BUG: Product created through POST /products is available "
+        "through GET /products/{id}, but does not reliably appear "
+        "in the paginated GET /products response."
+    ),
+    strict=False
+)
+```
+
+This keeps the known defect visible in the test suite without treating the expected failure as an unknown regression.
+
+---
+
+## Response Validation
+
+The framework includes a reusable `ResponseValidator`.
+
+It provides functionality for:
+
+* parsing API responses into Pydantic models
+* comparing Pydantic models
+* comparing lists of models
+* reporting detailed field-level differences
+
+For example:
+
+```python
+ResponseValidator.assert_models_equal(
+    response,
+    product_by_id
+)
+```
+
+This is used to verify that the same product contains consistent data when retrieved through different API endpoints.
+
+The comparison helps identify inconsistencies between:
+
+```text
+GET /products
+```
+
+and:
+
+```text
+GET /products/{id}
+```
+
+---
+
+## Product Validation
+
+The test suite validates product data returned by the API.
 
 Examples include:
 
-price
+```python
+assert isinstance(product.id, str)
+assert product.id
+assert product.name
+assert product.price >= 0
+```
 
-brand
+Nested objects are also checked:
 
-category
+```python
+assert product.category.id
+assert product.category.name
+assert product.category.slug
 
-CO2 rating
+assert product.brand.id
+assert product.brand.name
+```
 
-location offer
+Optional fields are handled explicitly.
 
-rental flag
+For example:
 
-product name
+```python
+if product.description is not None:
+    assert product.description
+```
 
-product image
+This allows the test to distinguish between an optional `None` value and an invalid empty value.
 
-stock
+---
 
-eco-friendly flag
+## Filtering
 
-The assertions compare nested response objects with the corresponding request values rather than relying only on HTTP status codes.
+Brand filtering is tested by first collecting available brands and then requesting products using each brand ID.
 
-Known API Behavior: is_eco_friendly
+The response is validated to ensure that returned products belong to the requested brand.
 
-One useful finding from the automated tests is data-dependent behavior around the is_eco_friendly field.
+Example:
 
-The test data generator can create both True and False values. During testing, the following behavior was observed:
+```python
+products = product_api.products(brand=brand_id)
 
-Request:  is_eco_friendly = True
-Response: is_eco_friendly = False
-Result:   assertion failure
+for product in products.data:
+    assert product.brand.id == brand_id
+    assert product.brand.name == brand_name
+```
 
-When the generated value is False, the same assertion may pass because the API also returns False.
+This validates both filtering behavior and the consistency of brand information.
 
-This means the observed failure depends on the generated test data and can appear intermittently across runs.
+---
 
-The test framework is useful here because it exposes the inconsistency instead of masking it. The failure points directly to a mismatch between the generated request data and the API response.
+## Pagination Testing
 
-This behavior should be treated as unexpected API behavior / a potential API defect until it is confirmed against the API contract.
+Pagination behavior is validated using multiple pages.
 
-For reliable defect reproduction, a dedicated deterministic test can use a fixed value such as is_eco_friendly = True rather than relying on random data.
+The tests verify:
 
-Known API Behavior: POST /products vs GET /products
+* current page number
+* total products
+* total pages
+* page size
+* different results between pages
 
-The framework also contains an xfail test that investigates read-after-write consistency for newly created products.
+Example:
 
-The test creates a product through POST /products and then checks the paginated GET /products collection to find the same product by ID. The product can be retrieved successfully through GET /products/{id}, but it does not reliably appear in the paginated product list immediately after creation.
+```python
+assert products_page_1.current_page == 1
+assert products_page_2.current_page == 2
 
-The test performs more than one collection lookup attempt and waits briefly before retrying the search. If the created product is still not found, the test fails with a message containing the product ID and the observed API response.
+assert len(products_page_1.data) <= products_page_1.per_page
+assert len(products_page_2.data) <= products_page_2.per_page
+```
 
-The scenario is currently marked with pytest.mark.xfail because the behavior is known and is treated as an expected failure while the API behavior remains unresolved. strict=False allows the test to remain informative if the API behavior changes and the test unexpectedly passes.
+---
 
-Example observed behavior:
+## Authentication Testing
 
-POST /products              → product created (201)
-GET /products/{id}          → product available
-GET /products?page=...     → product may be missing from collection
+The framework supports authenticated API requests using tokens obtained through the login endpoint.
 
-This test demonstrates that the framework can validate not only individual endpoint responses, but also consistency between related API operations and data visibility across endpoints. It helps identify potential synchronization, indexing, caching, or collection-consistency issues without hiding the behavior behind a hard-coded expected result.
+Authentication is implemented through pytest fixtures.
 
-Why This Framework
+Example:
 
-The goal is not only to automate happy-path API checks, but also to demonstrate a practical QA approach:
+```python
+product_api.client.set_token(auth_token)
 
-reusable API abstraction
+products = product_api.products()
+```
 
-typed response validation
+Separate authentication fixtures are used for different user roles when required by the test scenario.
 
-reusable pytest fixtures
+---
 
-authentication and authorization handling
+## Fixtures and Test Data Management
 
-test data generation
+Pytest fixtures are used to manage:
 
-custom exception handling
+* API clients
+* authentication
+* test data
+* test setup
+* cleanup
 
-retry logic for transient failures
+A `created_product` fixture:
 
-automatic test data cleanup
+1. Generates product data.
+2. Authenticates as an administrator.
+3. Creates a product through the API.
+4. Provides the payload and response to the test.
+5. Deletes the created product after the test.
 
-nested request/response comparison
+The cleanup is performed using `try/finally`, which ensures that the created product is removed even if the test fails.
 
-investigation and documentation of unexpected API behavior
+Conceptually:
 
-The framework is intentionally organized so that tests remain focused on test intent, while API communication, validation, data generation, and cleanup are handled by reusable components.
+```text
+Setup
+  ↓
+Create product
+  ↓
+Run test
+  ↓
+Cleanup
+  ↓
+Delete product
+```
 
-Running the Tests
+This keeps the test environment cleaner and reduces dependency between test runs.
 
-Create and activate a virtual environment, install dependencies, and run pytest from the project root.
+---
 
+## Retry Handling
+
+The product creation fixture includes limited retry handling for transient API failures.
+
+The retry mechanism does not retry expected client or authorization errors such as:
+
+```text
+400
+401
+403
+404
+```
+
+This prevents unnecessary retries for failures that are unlikely to be resolved by simply repeating the request.
+
+---
+
+## Custom API Errors
+
+The framework uses a custom `ApiError` exception.
+
+```text
+ApiError
+├── status_code
+└── response_body
+```
+
+Unexpected API responses can therefore be represented as a framework-level exception instead of being handled separately in every test.
+
+This keeps error handling centralized and makes failures easier to understand.
+
+---
+
+## Search Testing
+
+Product search is tested with both positive and negative scenarios.
+
+Positive examples include different letter cases:
+
+```text
+Hammer
+hammer
+dRill
+ThOr
+```
+
+A negative search scenario is also included:
+
+```text
+sdfvsdfv
+```
+
+The test verifies case-insensitive search behavior and validates returned product names against the requested search term.
+
+---
+
+## Logging
+
+Python's built-in `logging` module is used for framework logging.
+
+The project provides a reusable logger:
+
+```text
+utils/logger.py
+```
+
+The framework logs important API operations such as:
+
+```text
+GET /products
+GET /products -> 200
+
+POST /products
+POST /products -> 201
+```
+
+Logging is focused on useful execution information rather than sensitive request data such as:
+
+* authentication tokens
+* passwords
+* authorization headers
+* API keys
+
+---
+
+## Allure Reporting
+
+The project uses **Allure Report** for test reporting.
+
+Run the tests with:
+
+```bash
+pytest --alluredir=allure-results
+```
+
+Generate the report:
+
+```bash
+allure generate allure-results -o allure-report --clean
+```
+
+Open the report:
+
+```bash
+allure open allure-report
+```
+
+Allure results and generated reports are excluded from Git using `.gitignore`.
+
+---
+
+## Running the Tests
+
+Activate the virtual environment:
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the test suite:
+
+```bash
 pytest
+```
 
-Useful commands:
+Run with verbose output:
 
+```bash
 pytest -v
-pytest tests/test_product_api.py -v
-pytest -k create_product -v
+```
 
-Test Data and Secrets
+Run a specific test file:
 
-Real credentials should not be committed to the repository. Example configuration is kept separately from real local credentials, and sensitive files are excluded through .gitignore.
-
-Current Focus
-
-The framework is being extended incrementally with a focus on practical Python and pytest skills, maintainable API automation, and CI-ready test architecture.
+```bash
+pytest tests/test
+```

@@ -23,4 +23,4 @@ class AuthApi:
                 LoginResponse
             )
 
-        raise ApiError(response.json())
+        raise ApiError(response.status_code, response.json())

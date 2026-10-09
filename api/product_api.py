@@ -4,9 +4,12 @@ from exceptions.api_error import ApiError
 from helpers.response_validator import ResponseValidator
 from models.product_by_id_response import ProductByIdResponse
 from models.product_create_response import ProductCreateResponse
+from utils.logger import get_logger
 
 
 class ProductApi:
+
+    logger = get_logger(__name__)
 
     def __init__(self, client: ApiClient):
         self.client = client
@@ -41,6 +44,8 @@ class ProductApi:
         if sort is not None:
             params["sort"] = sort
 
+        self.logger.info("Get Products")
+
         response = self.client.get(
             "/products",
             params=params
@@ -49,6 +54,7 @@ class ProductApi:
         if response.status_code == 200:
             return ResponseValidator.parse_response(response, ProductsResponse)
 
+        self.logger.error(f"GET /products failed: {response.status_code} {response.json()}")
         raise ApiError(response.status_code, response.json())
 
     def search_product(self, q):
@@ -57,36 +63,40 @@ class ProductApi:
         if q is not None:
             params["q"] = q
 
+        self.logger.info(f"Search with {q} params")
         response = self.client.get("/products/search", params=params)
 
         if response.status_code == 200:
             return ResponseValidator.parse_response(response, ProductsResponse)
 
+        self.logger.error(f"GET /products/search with params: {params}  failed: {response.status_code} {response.json()}")
         raise ApiError(response.status_code, response.json())
     
     def product_by_id(self, product_id):
-
+        self.logger.info(f"Get product details by id: {product_id}")
         response = self.client.get(f"/products/{product_id}")
 
         if response.status_code == 200:
             return ResponseValidator.parse_response(response, ProductByIdResponse)
 
+        self.logger.error(f"GET /products/{product_id}  failed: {response.status_code} {response.json()}")
         raise ApiError(response.status_code, response.json())
 
     def create_product(self, payload):
-
+        self.logger.info("Creating product")
         response = self.client.post("/products", json=payload)
 
         if response.status_code == 201:
             return ResponseValidator.parse_response(response, ProductCreateResponse)
         
+        self.logger.error(f"POST /products \npayload: {payload}  failed: {response.status_code} {response.json()}")
         raise ApiError(response.status_code, response.json())
 
     def delete_product(self, product_id):
-
+        self.logger.info(f"Delete product with ID: {product_id}")
         response = self.client.delete(f"/products/{product_id}")
 
         if response.status_code == 204:
             return response
-
+        self.logger.error(f"DELETE /products/{product_id}  failed: {response.status_code} {response.json()}")
         raise ApiError(response.status_code, response.json())
