@@ -1,6 +1,5 @@
 import pytest
 
-from pages.checkout_page import CheckoutPage
 from api.api_client import ApiClient
 from api.auth_api import AuthApi
 from api.product_api import ProductApi
@@ -9,12 +8,6 @@ from api.user_api import UserApi
 from helpers.product_payload_generator import ProductPayloadGenerator
 from exceptions.api_error import ApiError
 
-
-
-
-@pytest.fixture
-def checkout_page(page):
-   return CheckoutPage(page)
 
 
 @pytest.fixture

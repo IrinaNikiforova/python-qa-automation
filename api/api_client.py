@@ -1,5 +1,4 @@
 import requests
-import pytest
 from utils.logger import get_logger
 from exceptions.api_error import ApiError
 
