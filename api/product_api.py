@@ -22,7 +22,7 @@ class ProductApi:
         category=None,
         rental=None,
         between=None,
-        sort=None
+        sort=None,
     ):
         params = {}
 
@@ -33,7 +33,7 @@ class ProductApi:
             params["by_brand"] = brand
 
         if category is not None:
-            params["by_category"] = category
+            params["by_category_slug"] = category
 
         if rental is not None:
             params["is_rental"] = rental
@@ -56,6 +56,13 @@ class ProductApi:
 
         self.logger.error(f"GET /products failed: {response.status_code} {response.json()}")
         raise ApiError(response.status_code, response.json())
+
+    def get_list_of_product_names(self, category=None):
+        page_count = self.products(category = category).last_page
+        product_names = []  
+        for page_number in range(1 ,page_count + 1):
+            response = self.products(page = page_count, category = category)
+
 
     def search_product(self, q):
         params = {}

@@ -4,6 +4,9 @@ from playwright.sync_api import expect
 from config.settings import UI_BASE_URL
 from config.users import USER1, ADMIN
 
+@pytest.mark.ui
+@pytest.mark.regression
+@pytest.mark.smoke
 @pytest.mark.parametrize(
     "email, password, role",
     [
@@ -24,6 +27,8 @@ def test_successful_login(login_page, email, password, role):
     else:
         raise ValueError(f"Unexpected role: {role}")
 
+@pytest.mark.ui
+@pytest.mark.regression
 @pytest.mark.parametrize(
     "email, password, type_of_error, expected_error_msg",
     [

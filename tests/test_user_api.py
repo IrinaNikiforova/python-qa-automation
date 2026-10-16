@@ -1,11 +1,16 @@
+import pytest
 from api.user_api import UserApi
 from config.users import USER1
 
+@pytest.mark.api
+@pytest.mark.regression
 def test_users_me_api(user_api, auth_token):
     
     user_me = user_api.users_me(token=auth_token)
     assert user_me.email == USER1["email"]
-    
+
+@pytest.mark.api
+@pytest.mark.regression    
 def test_users(user_api, auth_admin_token, auth_token):
 
     users = user_api.users(token=auth_admin_token)

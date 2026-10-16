@@ -4,7 +4,8 @@ import time
 from helpers.response_validator import ResponseValidator
 from helpers.product_payload_generator import ProductPayloadGenerator
 
-
+@pytest.mark.api
+@pytest.mark.regression
 def test_create_product(created_product):
 
     _, response = created_product
@@ -30,7 +31,8 @@ def test_create_product(created_product):
     assert response.product_image.id == payload["product_image_id"], \
         f"product_image_id mismatch: response={response.product_image.id}, payload={payload['product_image_id']}"
 
-
+@pytest.mark.api
+@pytest.mark.regression
 @pytest.mark.parametrize(
     "field, value",
     [
@@ -51,7 +53,8 @@ def test_create_product_with_different_boolean_variations(product_api, auth_admi
     assert getattr(response, field) == value, \
         f"{field} mismatch: response={getattr(response, field)}, payload={value}"
 
-
+@pytest.mark.api
+@pytest.mark.regression
 def test_created_product_is_available_by_id(
     product_api,
     created_product
@@ -75,7 +78,8 @@ def test_created_product_is_available_by_id(
         product_by_id
     )
 
-
+@pytest.mark.api
+@pytest.mark.regression
 @pytest.mark.xfail(
     reason=(
         "BUG: Product created through POST /products is available "
@@ -139,7 +143,8 @@ def test_created_product_is_available_in_products(
             f"was not found in GET /products after 2 attempts."
         )
 
-
+@pytest.mark.api
+@pytest.mark.regression
 def test_products(product_api):
 
     products = product_api.products()
@@ -166,7 +171,8 @@ def test_products(product_api):
         assert product.brand.id
         assert product.brand.name
 
-
+@pytest.mark.api
+@pytest.mark.regression
 def test_products_filter_by_brand(product_api):
 
     list_of_brands = {}
@@ -204,7 +210,8 @@ def test_products_filter_by_brand(product_api):
                     f"actual={product.brand.name}"
                 )
 
-
+@pytest.mark.api
+@pytest.mark.regression
 def test_products_have_valid_data(product_api):
 
     products = product_api.products()
@@ -224,7 +231,8 @@ def test_products_have_valid_data(product_api):
         if product.in_stock is not None:
             assert isinstance(product.in_stock, bool)
 
-
+@pytest.mark.api
+@pytest.mark.regression
 def test_products_pagination(product_api):
 
     products_page_1 = product_api.products(page=1)
@@ -241,7 +249,8 @@ def test_products_pagination(product_api):
 
     assert products_page_1.data != products_page_2.data
 
-
+@pytest.mark.api
+@pytest.mark.regression
 def test_products_with_auth_token(
     product_api,
     auth_token
@@ -263,7 +272,8 @@ def test_products_with_auth_token(
 
         assert product.price >= 0
 
-
+@pytest.mark.api
+@pytest.mark.regression
 def test_comparing_products_and_product_api_by_id(product_api):
 
     first_page = product_api.products()
@@ -282,7 +292,9 @@ def test_comparing_products_and_product_api_by_id(product_api):
                 product_data,
                 product_by_id
             )
-
+            
+@pytest.mark.api
+@pytest.mark.regression
 @pytest.mark.parametrize(
     "search, expected_result",
     [
