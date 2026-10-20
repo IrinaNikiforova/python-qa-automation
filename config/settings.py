@@ -1,1 +1,2 @@
 UI_BASE_URL = "https://practicesoftwaretesting.com"
+API_BASE_URL = "https://api.practicesoftwaretesting.com"

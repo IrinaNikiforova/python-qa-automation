@@ -5,21 +5,22 @@ from api.auth_api import AuthApi
 from api.product_api import ProductApi
 from config.users import USER1, USER2, USER3, ADMIN
 from api.user_api import UserApi
+from api.images_api import ImagesApi
+from api.brands_api import BrandsApi
+from api.categories_api import CategoriesApi
 from helpers.product_payload_generator import ProductPayloadGenerator
 from exceptions.api_error import ApiError
-
+from config.settings import API_BASE_URL
 
 
 @pytest.fixture
 def api_client():
-   return ApiClient(
-       "https://api.practicesoftwaretesting.com"
-   )
+   return ApiClient(API_BASE_URL)
 
 
 @pytest.fixture(scope="session")
 def auth_api_client():
-   return ApiClient("https://api.practicesoftwaretesting.com")
+   return ApiClient(API_BASE_URL)
 
 
 @pytest.fixture(scope="session")
@@ -53,6 +54,18 @@ def auth_admin_token(auth_api):
 @pytest.fixture
 def user_api(api_client):
    return UserApi(api_client)
+
+@pytest.fixture
+def images_api(api_client):
+   return ImagesApi(api_client)
+
+@pytest.fixture
+def brands_api(api_client):
+   return BrandsApi(api_client)
+
+@pytest.fixture
+def categories_api(api_client):
+   return CategoriesApi(api_client)
 
 
 @pytest.fixture
