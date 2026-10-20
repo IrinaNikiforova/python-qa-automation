@@ -10,19 +10,17 @@ from api.brands_api import BrandsApi
 from api.categories_api import CategoriesApi
 from helpers.product_payload_generator import ProductPayloadGenerator
 from exceptions.api_error import ApiError
-
+from config.settings import API_BASE_URL
 
 
 @pytest.fixture
 def api_client():
-   return ApiClient(
-       "https://api.practicesoftwaretesting.com"
-   )
+   return ApiClient(API_BASE_URL)
 
 
 @pytest.fixture(scope="session")
 def auth_api_client():
-   return ApiClient("https://api.practicesoftwaretesting.com")
+   return ApiClient(API_BASE_URL)
 
 
 @pytest.fixture(scope="session")
